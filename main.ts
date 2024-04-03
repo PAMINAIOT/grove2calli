@@ -737,7 +737,7 @@ namespace grove {
     /**
      * Check if Grove - Uart WiFi V2 is connected to Wifi
      */
-    //% block="Wifi OK?"
+    //% block="Wifi VOK?"
     //% group="UartWiFi"
     export function wifiOK() {
         return isWifiConnected
