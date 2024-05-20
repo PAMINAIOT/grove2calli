@@ -747,54 +747,7 @@ namespace grove {
     */
     //% block="Send Data to your Thingsboard Server 
     
-    /**
-     * Send data to ThinkSpeak
-     */
-    //% block="Send Data to your ThinkSpeak Channel|Write API Key %apiKey|Field1 %field1|Field2 %field2|Field3 %field3|Field4 %field4|Field5 %field5|Field6 %field6|Field7 %field7|Field8 %field8"
-    //% group="UartWiFi"
-    //% apiKey.defl="your Write API Key"
     
-    /**export function sendToThinkSpeak(apiKey: string, field1: number, field2: number, field3: number, field4: number, field5: number, field6: number, field7: number, field8: number) {
-        let result = 0
-        let retry = 2
-
-        // close the previous TCP connection
-        if (isWifiConnected) {
-            sendAtCmd("AT+CIPCLOSE")
-            waitAtResponse("OK", "ERROR", "None", 2000)
-        }
-
-        while (isWifiConnected && retry > 0) {
-            retry = retry - 1;
-            // establish TCP connection
-            sendAtCmd("AT+CIPSTART=\"TCP\",\"api.thingspeak.com\",80")
-            result = waitAtResponse("OK", "ALREADY CONNECTED", "ERROR", 2000)
-            if (result == 3) continue
-
-            let data = "GET /update?api_key=" + apiKey
-            if (!isNaN(field1)) data = data + "&field1=" + field1
-            if (!isNaN(field2)) data = data + "&field2=" + field2
-            if (!isNaN(field3)) data = data + "&field3=" + field3
-            if (!isNaN(field4)) data = data + "&field4=" + field4
-            if (!isNaN(field5)) data = data + "&field5=" + field5
-            if (!isNaN(field6)) data = data + "&field6=" + field6
-            if (!isNaN(field7)) data = data + "&field7=" + field7
-            if (!isNaN(field8)) data = data + "&field8=" + field8
-
-            sendAtCmd("AT+CIPSEND=" + (data.length + 2))
-            result = waitAtResponse(">", "OK", "ERROR", 2000)
-            if (result == 3) continue
-            sendAtCmd(data)
-            result = waitAtResponse("SEND OK", "SEND FAIL", "ERROR", 5000)
-
-            // // close the TCP connection
-            // sendAtCmd("AT+CIPCLOSE")
-            // waitAtResponse("OK", "ERROR", "None", 2000)
-
-            if (result == 1) break
-        }
-    }
-*/
 /**
      * Send Data to Thingsboard via HTTP
     */
@@ -803,9 +756,52 @@ namespace grove {
     /**
      * Send data to Thingsboard
      */
-    //% block="Send Data to your ThinkSpeak Channel|Write API Key %apiKey|Field1 %field1|Field2 %field2|Field3 %field3|Field4 %field4|Field5 %field5|Field6 %field6|Field7 %field7|Field8 %field8"
+    //% block="Send Data to your Thingsboard Channel|Write API Key %apiKey|Field1 %field1|Field2 %field2|Field3 %field3|Field4 %field4|Field5 %field5|Field6 %field6|Field7 %field7|Field8 %field8"
     //% group="UartWiFi"
     //% apiKey.defl="your Write API Key"
+     
+    basic.forever(function () {
+    // Überprüfen, ob WLAN verbunden ist
+    if (wifi.isWifiConnected()) {
+        basic.showIcon(IconNames.Happy)
+
+        // Beispiel-Daten
+        let temperature = 25
+        let humidity = 60
+
+        // JSON-Daten erstellen
+        let data = {
+            "temperature": temperature,
+            "humidity": humidity
+        }
+
+        // JSON in String umwandeln
+        let payload = JSON.stringify(data)
+
+        // HTTP-POST-Anfrage erstellen
+        let httpRequest = `POST /api/v1/${token}/telemetry HTTP/1.1\r\n` +
+                          `Host: ${thingsboardServer}\r\n` +
+                          `Content-Type: application/json\r\n` +
+                          `Content-Length: ${payload.length}\r\n\r\n` +
+                          `${payload}`
+
+        // Anfrage senden
+        wifi.sendAT("AT+CIPSTART=\"TCP\",\"" + thingsboardServer + "\",80")
+        basic.pause(2000)
+        wifi.sendAT("AT+CIPSEND=" + (httpRequest.length + 2))
+        basic.pause(1000)
+        wifi.sendAT(httpRequest)
+        basic.pause(1000)
+        wifi.sendAT("AT+CIPCLOSE")
+        basic.pause(1000)
+    } else {
+        basic.showIcon(IconNames.Sad)
+        wifi.connectWiFi(ssid, password)
+    }
+    // Wartezeit zwischen den Messungen
+    basic.pause(60000) // 60 Sekunden
+})
+*/
     
     export function sendToThingsBoard(apiPath: string, servermitport: string, inhaltstyp: string, length: number, schluesselundwert: string) {
         let result = 0
