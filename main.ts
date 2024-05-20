@@ -803,7 +803,7 @@ namespace grove {
 })
 */
     
-    export function sendToThingsBoard(apiPath: string, servermitport: string, inhaltstyp: string, length: number, schluesselundwert: string) {
+    export function sendToThingsBoard(POST: string, HOST: string, CONTENT_Type: string, CONTENT_Length: number, payload: string) {
         let result = 0
         let retry = 2
 
@@ -816,19 +816,13 @@ namespace grove {
         while (isWifiConnected && retry > 0) {
             retry = retry - 1;
             // establish TCP connection
-            sendAtCmd("AT+CIPSTART=\"TCP\",\"apiPath",9090")
+            sendAtCmd("AT+CIPSTART=\"TCP\",\"paminasogo.ddns.net",9090")
             result = waitAtResponse("OK", "ALREADY CONNECTED", "ERROR", 2000)
             if (result == 3) continue
 
-            let data = "GET /update?api_key=" + apiKey
-            if (!isNaN(field1)) data = data + "&field1=" + field1
-            if (!isNaN(field2)) data = data + "&field2=" + field2
-            if (!isNaN(field3)) data = data + "&field3=" + field3
-            if (!isNaN(field4)) data = data + "&field4=" + field4
-            if (!isNaN(field5)) data = data + "&field5=" + field5
-            if (!isNaN(field6)) data = data + "&field6=" + field6
-            if (!isNaN(field7)) data = data + "&field7=" + field7
-            if (!isNaN(field8)) data = data + "&field8=" + field8
+            let data = { "temperature": temperature,
+                        "humidity": humidity}
+            let payload = JSON.stringify(data)
 
             sendAtCmd("AT+CIPSEND=" + (data.length + 2))
             result = waitAtResponse(">", "OK", "ERROR", 2000)
