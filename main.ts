@@ -802,8 +802,18 @@ namespace grove {
     basic.pause(60000) // 60 Sekunden
 })
 */
-    
-    export function sendToThingsBoard(POST: string, HOST: string, CONTENT_Type: string, CONTENT_Length: number, payload: string) {
+    let POST = `POST /api/v1/wV0EikPcEMHcE3u3zvgI/telemetry HTTP/1.1\r\n`
+    let HOST = `HOST: paminasogo.ddns.net:9090\r\n`
+    let CONTENT_Type = `Content-Type: application/json\r\n`
+    let Content_Length = `Content-Length: ${payload.length}\r\n\r\n`
+    let payload = `${payload}`
+    let data = { "temperature": temperature,
+                 "humidity": humidity}
+    let payload = JSON.stringify(data)
+    httpRequest = `POST /api/v1/wV0EikPcEMHcE3u3zvgI/telemetry HTTP/1.1\r\n` + `Host: paminasogo.ddns.net:9090\r\n` + `Content-Type: application/json\r\n` + `Content-Length: ${payload.length}\r\n\r\n` + `${payload}`
+           
+        
+    export function sendToThingsBoard(POST: string, HOST: string, CONTENT_Type: string, CONTENT_Length: string, payload: string) {
         let result = 0
         let retry = 2
 
@@ -820,14 +830,24 @@ namespace grove {
             result = waitAtResponse("OK", "ALREADY CONNECTED", "ERROR", 2000)
             if (result == 3) continue
 
-            let data = { "temperature": temperature,
-                        "humidity": humidity}
-            let payload = JSON.stringify(data)
-
+            //httpRequest = `POST /api/v1/wV0EikPcEMHcE3u3zvgI/telemetry HTTP/1.1\r\n` + `Host: paminasogo.ddns.net:9090\r\n` + `Content-Type: application/json\r\n` + `Content-Length: ${payload.length}\r\n\r\n` + `${payload}`
             sendAtCmd("AT+CIPSEND=" + (data.length + 2))
             result = waitAtResponse(">", "OK", "ERROR", 2000)
             if (result == 3) continue
-            sendAtCmd(data)
+            response2 = sendAtCmd("AT+CIPSTART=\"TCP\",\"paminasogo.ddns.net\",9090")
+            basic.showString(response2)
+            basic.pause(2000)
+            response2 = sendAtCmd("AT+CIPSEND=" + (httpRequest.length + 2))
+            basic.showString(response2)
+            basic.pause(1000)
+            response2 = sendAtCmd("AT+CIPSEND=" + httpRequest)
+            basic.showString(response2)
+            basic.pause(1000)
+            response2 = sendAtCmd("AT+CIPCLOSE")
+            basic.showString(response2)
+            basic.pause(1000)
+            
+            //sendAtCmd(data)
             result = waitAtResponse("SEND OK", "SEND FAIL", "ERROR", 5000)
 
             // // close the TCP connection
