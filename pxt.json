@@ -1,7 +1,7 @@
 {
-    "name": "Grove",
-    "version": "0.6.0",
-    "description": "A Microsoft MakeCode package for Seeed Studio Grove module",
+    "name": "grove2calli",
+    "version": "1.0.0",
+    "description": "A PL MakeCode package for Seeed Studio Grove module",
     "license": "MIT",
     "dependencies": {
         "core": "*"
